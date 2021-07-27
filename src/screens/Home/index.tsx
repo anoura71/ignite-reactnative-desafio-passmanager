@@ -9,7 +9,7 @@ import {
   Container,
   LoginList,
   EmptyListContainer,
-  EmptyListMessage
+  EmptyListMessage,
 } from './styles';
 
 interface LoginDataProps {
@@ -17,27 +17,44 @@ interface LoginDataProps {
   title: string;
   email: string;
   password: string;
-};
+}
 
 type LoginListDataProps = LoginDataProps[];
 
 export function Home() {
-  // const [searchListData, setSearchListData] = useState<LoginListDataProps>([]);
-  // const [data, setData] = useState<LoginListDataProps>([]);
+  const [searchListData, setSearchListData] = useState<LoginListDataProps>([]);
+  const [data, setData] = useState<LoginListDataProps>([]);
 
   async function loadData() {
     // Get asyncStorage data, use setSearchListData and setData
+    const key = '@passmanager:logins';
+
+    const response = await AsyncStorage.getItem(key);
+    const formattedList: LoginListDataProps = response
+      ? JSON.parse(response)
+      : [];
+
+    setData(formattedList);
+    setSearchListData(formattedList);
   }
+
   useEffect(() => {
     loadData();
   }, []);
 
-  useFocusEffect(useCallback(() => {
-    loadData();
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   function handleFilterLoginData(search: string) {
     // Filter results inside data, save with setSearchListData
+    const filteredData: LoginListDataProps = data.filter(
+      (item: LoginDataProps) =>
+        item.title.toLowerCase().includes(search.toLowerCase())
+    );
+    setSearchListData(filteredData);
   }
 
   return (
@@ -50,19 +67,21 @@ export function Home() {
       <LoginList
         keyExtractor={(item) => item.id}
         data={searchListData}
-        ListEmptyComponent={(
+        ListEmptyComponent={
           <EmptyListContainer>
             <EmptyListMessage>Nenhum item a ser mostrado</EmptyListMessage>
           </EmptyListContainer>
-        )}
+        }
         renderItem={({ item: loginData }) => {
-          return <LoginDataItem
-            title={loginData.title}
-            email={loginData.email}
-            password={loginData.password}
-          />
+          return (
+            <LoginDataItem
+              title={loginData.title}
+              email={loginData.email}
+              password={loginData.password}
+            />
+          );
         }}
       />
     </Container>
-  )
+  );
 }
