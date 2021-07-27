@@ -30,12 +30,13 @@ export function Home() {
     const key = '@passmanager:logins';
 
     const response = await AsyncStorage.getItem(key);
-    const formattedList: LoginListDataProps = response
-      ? JSON.parse(response)
-      : [];
 
-    setData(formattedList);
-    setSearchListData(formattedList);
+    if (!response) {
+      return;
+    }
+
+    setData(JSON.parse(response));
+    setSearchListData(JSON.parse(response));
   }
 
   useEffect(() => {
