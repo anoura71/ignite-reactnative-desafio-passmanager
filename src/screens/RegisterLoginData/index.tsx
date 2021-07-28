@@ -1,16 +1,16 @@
-import React from 'react';
-import { Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { useForm } from 'react-hook-form';
-import { RFValue } from 'react-native-responsive-fontsize';
-import * as Yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import uuid from 'react-native-uuid';
+import React from "react";
+import { Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { useForm } from "react-hook-form";
+import { RFValue } from "react-native-responsive-fontsize";
+import * as Yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import uuid from "react-native-uuid";
 
-import { Input } from '../../components/Form/Input';
-import { Button } from '../../components/Form/Button';
+import { Input } from "../../components/Form/Input";
+import { Button } from "../../components/Form/Button";
 
-import { Container, HeaderTitle, Form } from './styles';
+import { Container, HeaderTitle, Form } from "./styles";
+import { useStorageData } from "../../hooks/storage";
 
 interface FormData {
   title: string;
@@ -19,11 +19,11 @@ interface FormData {
 }
 
 const schema = Yup.object().shape({
-  title: Yup.string().required('Título é obrigatório!'),
+  title: Yup.string().required("Título é obrigatório!"),
   email: Yup.string()
-    .email('Não é um email válido')
-    .required('Email é obrigatório!'),
-  password: Yup.string().required('Senha é obrigatória!'),
+    .email("Não é um email válido")
+    .required("Email é obrigatório!"),
+  password: Yup.string().required("Senha é obrigatória!"),
 });
 
 export function RegisterLoginData() {
@@ -36,33 +36,28 @@ export function RegisterLoginData() {
     resolver: yupResolver(schema),
   });
 
-  async function handleRegister(formData: FormData) {
+  const { setStorage } = useStorageData();
+
+  async function handleRegisterLogin(formData: FormData) {
     const newLoginData = {
       id: String(uuid.v4()),
       ...formData,
     };
 
-    // Save data on AsyncStorage
     try {
-      const key = '@passmanager:logins';
-
-      const existingData = await AsyncStorage.getItem(key);
-      const existingDataParsed = existingData ? JSON.parse(existingData) : [];
-      const formattedData = [...existingDataParsed, newLoginData];
-
-      await AsyncStorage.setItem(key, JSON.stringify(formattedData));
+      setStorage(newLoginData);
 
       reset();
     } catch (error) {
       console.log(error);
-      Alert.alert('Não foi possível cadastrar o login');
+      Alert.alert("Não foi possível cadastrar o login");
     }
   }
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
       enabled
     >
       <Container>
@@ -102,7 +97,7 @@ export function RegisterLoginData() {
               marginTop: RFValue(26),
             }}
             title="Salvar"
-            onPress={handleSubmit(handleRegister)}
+            onPress={handleSubmit(handleRegisterLogin)}
           />
         </Form>
       </Container>

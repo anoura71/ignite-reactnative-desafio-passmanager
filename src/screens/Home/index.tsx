@@ -1,16 +1,16 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 
-import { SearchBar } from '../../components/SearchBar';
-import { LoginDataItem } from '../../components/LoginDataItem';
+import { SearchBar } from "../../components/SearchBar";
+import { LoginDataItem } from "../../components/LoginDataItem";
 
 import {
   Container,
   LoginList,
   EmptyListContainer,
   EmptyListMessage,
-} from './styles';
+} from "./styles";
+import { useStorageData } from "../../hooks/storage";
 
 interface LoginDataProps {
   id: string;
@@ -22,21 +22,10 @@ interface LoginDataProps {
 type LoginListDataProps = LoginDataProps[];
 
 export function Home() {
-  const [searchListData, setSearchListData] = useState<LoginListDataProps>([]);
-  const [data, setData] = useState<LoginListDataProps>([]);
+  const { searchListData, loadStorage, filterLogins } = useStorageData();
 
   async function loadData() {
-    // Get asyncStorage data, use setSearchListData and setData
-    const key = '@passmanager:logins';
-
-    const response = await AsyncStorage.getItem(key);
-
-    if (!response) {
-      return;
-    }
-
-    setData(JSON.parse(response));
-    setSearchListData(JSON.parse(response));
+    await loadStorage();
   }
 
   useEffect(() => {
@@ -49,20 +38,11 @@ export function Home() {
     }, [])
   );
 
-  function handleFilterLoginData(search: string) {
-    // Filter results inside data, save with setSearchListData
-    const filteredData: LoginListDataProps = data.filter(
-      (item: LoginDataProps) =>
-        item.title.toLowerCase().includes(search.toLowerCase())
-    );
-    setSearchListData(filteredData);
-  }
-
   return (
     <Container>
       <SearchBar
         placeholder="Pesquise pelo nome do serviço"
-        onChangeText={(value) => handleFilterLoginData(value)}
+        onChangeText={(value) => filterLogins(value)}
       />
 
       <LoginList
